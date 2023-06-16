@@ -63,7 +63,7 @@ def create_root() -> pt.behaviour.Behaviour:
     
     laserScan2BB = laser_scan_2bb(
     	name="LaserScan2BB",
-    	topic_name="/scan",
+    	topic_name="/sick_lms_1xx/scan",   #/scan for simulation
         safe_range=0.2
     )
 
@@ -73,19 +73,11 @@ def create_root() -> pt.behaviour.Behaviour:
     )
 
     walldata = wall_get_data(
-        name = "WallData"
-        # topic_name="/scan"
+        name = "WallData",
+        topic_name="/sick_lms_1xx/scan"
         
     )
-    
-    # align = alignment(
-    #     name = "Aligning",
-    #     topic_name="/cmd_vel"
-        
-    # )
-   
-    
-       
+      
 
       
   	
@@ -128,15 +120,11 @@ def create_root() -> pt.behaviour.Behaviour:
     
     
 
-
-       
-
     
     blackboard = pt.blackboard.Blackboard()
-    # blackboard.battery_low_warning = False
-    # blackboard.wall_detect_warning = False
-    # blackboard.check_warning = False
-    # blackboard.ransac_warn = False
+    blackboard.battery_low_warning = False
+    blackboard.collison_warning = False
+
     blackboard.wall_warn = False
     
     battery_emergency = pt.decorators.EternalGuard(
@@ -152,25 +140,9 @@ def create_root() -> pt.behaviour.Behaviour:
         blackboard_keys={"collison_warning"},
 
         child = stop_platform
-        # child = align
 
     )
     
-
-    # logic = pt.decorators.EternalGuard(
-    #     name="RANSAC&ROTATE?",
-    #     condition=get_ransac,
-    #     blackboard_keys={"ransac_warn"},
-    #     child = walldata
-    # ) 
-
-    # detect = pt.decorators.EternalGuard(
-    #     name="Detect?",
-    #     condition=check_detect_on_blackboard,
-    #     blackboard_keys={"detect_warning"},
-    #     child = cond
-    # ) 
-
 
     check = pt.decorators.EternalGuard(
         name="CheckingWall?",
@@ -187,8 +159,7 @@ def create_root() -> pt.behaviour.Behaviour:
 
 
     idle = pt.behaviours.Running(name="Idle")
-    # idle1 = pt.behaviours.Running(name="Idle_for_RANSAC")
-    # idle2 = pt.behaviours.Running(name="Idle_for_Action")
+   
 
     """
     construct the behvior tree structure using the nodes and behaviors defined above
@@ -197,34 +168,18 @@ def create_root() -> pt.behaviour.Behaviour:
     ### YOUR CODE HERE ###
     
     root.add_child(topics2bb)
-    topics2bb.add_child(battery2bb)
+    # topics2bb.add_child(battery2bb)
     topics2bb.add_child(laserScan2BB)
     topics2bb.add_child(walldata)
 
      
     root.add_child(priorities)
-    priorities.add_child(collide_emergency)
-    priorities.add_child(battery_emergency)
+    # priorities.add_child(collide_emergency)
+    # priorities.add_child(battery_emergency)
     priorities.add_child(check)
     action.add_child(move)
     action.add_child(align)
     priorities.add_child(idle)
-
-
-    # root.add_child(logic)
-    # # wall.add_child(wall_detect)
-    # wall.add_child(idle1)
-
-
-    # root.add_child(action)
-    # action.add_child(check)
-    # action.add_child(idle2)
-
-
-
-
-
-
 
 
     
@@ -259,7 +214,7 @@ def main():
         sys.exit(1)
     
     # frequency of ticks
-    tree.tick_tock(period_ms=10)    
+    tree.tick_tock(period_ms=10) #chamge the value to 100 if required for communication   
     
     try:
         rclpy.spin(tree.node)
