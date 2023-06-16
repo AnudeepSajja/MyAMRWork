@@ -265,13 +265,27 @@ def reduction_filter(data_points, sigma, k):
         output.append(cur_sum/i)
     return np.array(output)
 
+def median_filter(data_points,k = 5):
+    
+    df = pd.DataFrame(data_points, columns = ['distance','angles'])
+    df_avg = df.rolling(k, axis=0).median().dropna()
+    filtered_points = np.array(df_avg[['distance', 'angles']])
+    
+    return filtered_points
+
 def polardatadf(data):
  
     #min_angle_rad = -2.356194496154785
 #     max_angle_rad = 2.0923497676849365
     
-    min_angle_rad = -1.5700000524520874
-    max_angle_rad = 1.5700000524520874
+    # #simulation
+    # min_angle_rad = -1.5700000524520874     
+    # max_angle_rad = 1.5700000524520874
+
+    #for robile 3
+
+    min_angle_rad = -1.5707963705062866    
+    max_angle_rad = 1.5707963705062866
 
     data[data=='.inf'] = 0
     data = np.array(data, dtype=float)

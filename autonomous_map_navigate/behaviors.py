@@ -273,13 +273,13 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
     Checking laser_scan to avoid possible collison
     """
     def __init__(self, 
-                 topic_name: str="/scan",
+                 topic_name: str="/sick_lms_1xx/scan",  # topic = "/scan" for simulation
                  name: str=pt.common.Name.AUTO_GENERATED, 
                  safe_range: float=1.5):
         super().__init__(name=name,
                         topic_name=topic_name,
                         topic_type=LaserScan,
-                        blackboard_variables={'laser_scan':'ranges'},
+                        blackboard_variables={'laser_scan':'ranges'},  
                         #initialise_variables={'battery': []},
                         clearing_policy=pt.common.ClearingPolicy.NEVER,  # to decide when data should be cleared/reset.
                         # qos_profile=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
@@ -304,40 +304,11 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
             access=pt.common.Access.WRITE
         )
 
-        # self.blackboard.register_key(
-        #     key='wall_detect_warning',
-        #     access=pt.common.Access.WRITE
-        # )
-
-        # self.blackboard.register_key(
-        #     key='wall_slope',
-        #     access=pt.common.Access.WRITE
-        # )
-
-        # self.blackboard.register_key(
-        #     key='perp_distance',
-        #     access=pt.common.Access.WRITE
-        # # )
-
-        # self.blackboard.register_key(
-        #     key='wall_data',
-        #     access=pt.common.Access.WRITE
-        # )
-
-        # self.blackboard.register_key(
-        #     key='ransac_warn',
-        #     access=pt.common.Access.WRITE
-        # )
-
         self.blackboard.counter = 0
         self.blackboard.collison_warning = False   # decision making
         self.safe_min_range = safe_range
         self.blackboard.point_at_min_dist = 0.0
-        # self.blackboard.wall_detect_warning = False
-        # self.blackboard.ransac_warn = False
-        # self.blackboard.wall_slope = 0.0
-        # self.blackboard.perp_distance = 0.0
-
+  
     def update(self):
         """
         Primary function of the behavior is implemented in this method
@@ -363,49 +334,18 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
             laser_data[laser_data <= 0.05] = 1.0
             laser_data = np.nan_to_num(laser_data, nan=40)
 
-            # data_check = laser_data
-            # data_check[np.isinf(data_check)]=50
-            # data_check = data_check.tolist()
-
-
             laser_data[np.isinf(laser_data)]=50
-            # laser_data = laser_data.tolist()
-            # print(laser_data)
-            # self.blackboard.laser_data = laser_data
-
-            # print(min(self.black   board.laser_scan))
-            # self.blackboard=pt.blackboard.Blackboard()
+            laser_data = laser_data.tolist()
         
             self.blackboard.point_at_min_dist = min(laser_data)
+            # self.blackboard.laser_data = laser_data
 
             if self.blackboard.point_at_min_dist < self.safe_min_range:
 
                 self.blackboard.collison_warning = True
-                # self.blackboard.ransac_warn = True
-                # self.blackboard.wall_detect_warning = True
-
-                # df = pd.DataFrame({"distance": laser_data, "angle": range(0, 150)})
-
-                # # Filter points based on distance
-                # scan_dist_thresh = 8000
-                # df = df.drop(df[df.distance > scan_dist_thresh].index)
-                # data_points = np.array(df[['distance', 'angle']])
-                # array = np_polar2rect(reduction_filter(data_points, sigma=40, k=6))
-
-
-                # # points = [point for point in array]
-            
-                # res = RANSAC_get_line_params(points=array, dist_thresh=10, iterations=10, thresh_count=10)
-
-                # self.blackboard.wall_data = res
-                # self.blackboard.wall_slope = res[0][1]
-                # self.blackboard.perp_distance = res[0][0]
-
-                # self.blackboard.check_warning = True
 
             else:
                 self.blackboard.collison_warning = False
-                # self.blackboard.wall_detect_warning = False
 
             return pt.common.Status.SUCCESS
         else:
@@ -499,7 +439,7 @@ class position_wrt_odom(ptr.subscribers.ToBlackboard):
 class wall_get_data(ptr.subscribers.ToBlackboard):
 
     def __init__(self, 
-                 topic_name: str="/scan",
+                 topic_name: str="/sick_lms_1xx/scan",
                  name: str=pt.common.Name.AUTO_GENERATED):
         super().__init__(name=name,
                         topic_name=topic_name,
@@ -543,35 +483,27 @@ class wall_get_data(ptr.subscribers.ToBlackboard):
 
 
     def update(self):   
-        data = np.array(self.blackboard.laser_scan)
-        data[np.isinf(data)]=50
-        data = data.tolist()
-        # filter_data
+        laser_data = np.array(self.blackboard.laser_scan)
 
-        self.blackboard.laser_data = data
+        laser_data[laser_data <= 0.05] = 1.0
+        laser_data = np.nan_to_num(laser_data, nan=40)
 
+        laser_data[np.isinf(laser_data)]=50
+        # laser_data = laser_data.tolist()
+
+        data = laser_data
+
+        self.blackboard.laser_data = laser_data
+
+        # data = np.array(laser_data)
         
-        # df = pd.DataFrame({"distance": data, "angle": range(0, 150)})
+        #for simulation
+        # red_data = process_data(range_data= data, max_angle= 1.5700000524520874, min_angle= -1.5700000524520874, max_range= 5.599999904632568, min_range= 0.05000000074505806, sigma= 0.15 , rf_max_pts= 4, reduce_bool= True)
         
-        # filtered_data = process_data(range_data= data, max_angle= 1.5700000524520874, min_angle= -1.5700000524520874, max_range= 5.599999904632568, min_range= 0.05000000074505806, sigma= 40.0 , rf_max_pts= 6, reduce_bool= True)
-        # filtered_data = filtered_data.tolist()
-    
-
-
-        df = polardatadf(data)
-
-        # Filter points based on distance
-        scan_dist_thresh = 8000
-        df = df.drop(df[df.distance > scan_dist_thresh].index)
-        data_points = np.array(df[['distance', 'angles']])
-        filtered_data = np_polar2rect(reduction_filter(data_points, sigma=40, k=6))
-
-        # print(filtered_data)
-
-
-        # points = [point for point in array]
-    
-        res = RANSAC_get_line_params(points=filtered_data, dist_thresh=0.2, iterations=10, thresh_count=8)
+        #for robile3
+        red_data = process_data(range_data= data, max_angle= 1.5707963705062866, min_angle= -1.5707963705062866, max_range= 25.0, min_range= 0.05000000074505806, sigma= 0.15 , rf_max_pts= 4, reduce_bool= True)
+        # filtered_data = median_filter(red_data,k=5)
+        res = RANSAC_get_line_params(points= red_data, dist_thresh= 0.03, iterations= 20, thresh_count= 4)
 
         if res == []:
             print("aligned")
@@ -584,13 +516,7 @@ class wall_get_data(ptr.subscribers.ToBlackboard):
             self.blackboard.wall_slope = res[0][1]
             self.blackboard.distance = res[0][0]
             self.blackboard.wall_warn = True
-
-        # res = online_get_line_params(points_array= filtered_data, e=0.45, incr=0.01, max_dist=0.1, k=5)
-
-        # self.blackboard.wall_slope = res
-
-        
-                        
+                       
 
         return pt.common.Status.SUCCESS
     
@@ -619,27 +545,10 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
         super(rotate_wrt_angle, self).__init__(name)
 
         self.blackboard = pt.blackboard.Blackboard()
-        # self.blackboard.storage = {'m1': 'wall_slope'}
-
-        # self.blackboard.register_key(
-        #     key='wall_slope',
-        #     access=pt.common.Access.WRITE
-        # )
-        
-
-        # self.blackboard.register_key(
-        #     key='check_warning',
-        #     access=pt.common.Access.WRITE
-        # )
-        # self.blackboard.set('check_warning')
-
+       
         self.slope = self.blackboard.get('wall_slope')
-        self.m1 = abs(self.slope)
-        # self.m1 = self.blackboard.wall_slope
-        # print(self.blackboard.storage['m1'])
-        # self.angle = float(self.blackboard.storage['m1'])
-        # self.angle = 0.1
-        # print(self.angle)
+        # self.m1 = abs(self.slope)
+        self.m1 = self.slope
 
     def setup(self, **kwargs):
         """
@@ -684,31 +593,15 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
         
 
         msg = Twist()
-    
-        # if self.angle >= 0.05:
-        #     msg.linear.x = 0.0
-        #     msg.linear.y= 0.0
-        #     msg.angular.z = -1.0
+       
 
-        #     self.cmd_vel_pub.publish(msg)
-        #     # self.angle = self.angle - 1
-        #     self.m1 = self.blackboard.get('wall_slope')
-        #     self.angle = abs(self.m1)
-
-        #     return pt.common.Status.RUNNING
-            
-        # else:
-
-        #     return pt.common.Status.SUCCESS
-        
-
-        if self.m1 == 1000 or self.m1 >15:
+        if self.m1 == 1000 or self.m1 < 0.1:
             return pt.common.Status.SUCCESS
         
         else:
             msg.linear.x = 0.0
             msg.linear.y= 0.0
-            msg.angular.z = 0.65
+            msg.angular.z = 0.2
 
             self.cmd_vel_pub.publish(msg)
             # self.angle = self.angle - 1
@@ -751,7 +644,7 @@ class move_wrt_distance(pt.behaviour.Behaviour):
     Rotates the robot about z-axis 
     """
 
-    def __init__(self, name="moving_wrt_distance", topic_name="/cmd_vel", direction=1, max_ang_vel=0.75):
+    def __init__(self, name="moving_wrt_distance", topic_name="/cmd_vel", direction=1, max_ang_vel=0.1):
 
         self.topic_name = topic_name
 
@@ -807,7 +700,7 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         msg = Twist()
         
 
-        if self.d < 0.6:
+        if self.d < 1.2 :
             return pt.common.Status.SUCCESS
         
         else:
@@ -837,6 +730,8 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         self.cmd_vel_pub.publish(twist_msg)
 
         self.d = self.blackboard.get('distance')
+
+        # self.blackboard.set('wall_warn',False)
 
 
         # self.angle = abs(self.blackboard.wall_slope)
