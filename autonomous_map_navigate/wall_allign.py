@@ -63,7 +63,7 @@ def create_root() -> pt.behaviour.Behaviour:
     
     laserScan2BB = laser_scan_2bb(
     	name="LaserScan2BB",
-    	topic_name="/sick_lms_1xx/scan",   #/sick_lms_1xx/scan for robille3
+    	topic_name="/scan",   #/sick_lms_1xx/scan for robille3
         safe_range=0.2
     )
 
