@@ -666,6 +666,9 @@ class move_allign(pt.behaviour.Behaviour):
         # return super().terminate(new_status)              
 
 
+
+
+
 class wall_following(pt.behaviour.Behaviour):
 
     """
@@ -673,26 +676,6 @@ class wall_following(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="following_wall", topic_name="/cmd_vel", direction=1, max_ang_vel=0.5):
-
-        # self.blackboard.set('check_warning',False)
-        self.blackboard.set('wall_warn',False)
-
-        self.slope = self.blackboard.get('wall_slope')
-        self.m1 = abs(self.slope)
-
-
-        # self.angle = abs(self.blackboard.wall_slope)
-
-        return pt.common.Status.SUCCESS
-
-
-class move_wrt_distance(pt.behaviour.Behaviour):
-
-    """
-    Rotates the robot about z-axis 
-    """
-
-    def __init__(self, name="moving_wrt_distance", topic_name="/cmd_vel", direction=1, max_ang_vel=0.1):
 
         self.topic_name = topic_name
 
@@ -719,11 +702,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
     
 
 
-        super(move_wrt_distance, self).__init__(name)
-
-        self.blackboard = pt.blackboard.Blackboard()
-
-        self.d = self.blackboard.get('distance')
         
 
     def setup(self, **kwargs):
@@ -731,7 +709,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         Setting up things which generally might require time to prevent delay in tree initialisation
         """
         self.logger.info("[following_wall] setting up move_allign behavior")
-        self.logger.info("[moving_wrt_distance] setting up rotate behavior")
         
         try:
             self.node = kwargs['node']
@@ -747,7 +724,9 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         )
 
         # self.distance = self.blackboard.get('near_distance')
-        self.feedback_message = "setup"        return True
+
+        self.feedback_message = "setup"
+        return True
 
     def update(self):
         """
@@ -791,29 +770,8 @@ class move_wrt_distance(pt.behaviour.Behaviour):
                
             
 
- 
-        self.logger.info("[moving_wrt_distance] update: updating rotate behavior")
-        self.logger.debug("%s.update()" % self.__class__.__name__)
-        self.d = self.blackboard.get('distance')
-
-        msg = Twist()
-        
-
-        if self.d < 1.2 :
-            return pt.common.Status.SUCCESS
-        
-        else:
-            msg.linear.x = self.max_ang_vel
-            msg.linear.y= 0.0
-
-            self.cmd_vel_pub.publish(msg)
-                       
-            self.d = self.blackboard.get('distance')
-
-            return pt.common.Status.RUNNING
-
-
-        
+            
+                                
     def terminate(self, new_status):
         """
         terminate() is trigerred once the execution of the behavior finishes, 
@@ -826,7 +784,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         twist_msg.angular.z = 0.
                     
         self.cmd_vel_pub.publish(twist_msg)
-
         self.blackboard.set('aligned',False)
         self.blackboard.set('wall_warn',False)
         self.slope = self.blackboard.get('slope')
@@ -837,20 +794,7 @@ class move_wrt_distance(pt.behaviour.Behaviour):
 
             
 
-                
 
-
-
-
-
-
-
-
-
-
-
-
-                    
 
 
 
