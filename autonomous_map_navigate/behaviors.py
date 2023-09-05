@@ -14,11 +14,7 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from autonomous_map_navigate.utilities import *
 import math
-<<<<<<< HEAD
 import time
-
-=======
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
 
 
@@ -198,11 +194,6 @@ class stop_motion(pt.behaviour.Behaviour):
         # joyMessage.buttons = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
         # self.joy_pub.publish(joyMessage)   
              
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         return pt.common.Status.SUCCESS
         # return pt.common.Status.RUNNING
 
@@ -223,12 +214,6 @@ class stop_motion(pt.behaviour.Behaviour):
         self.cmd_vel_topic.publish(twist_msg)
         self.sent_goal = False
         return super().terminate(new_status)
-<<<<<<< HEAD
-   
-=======
-    
-    
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
 class battery_status2bb(ptr.subscribers.ToBlackboard):
 
@@ -286,7 +271,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
     Checking laser_scan to avoid possible collison
     """
     def __init__(self, 
-<<<<<<< HEAD
                  topic_name: str="/sick_lms_1xx/scan", #/sick_lms_1xx/scan for robile3
                  name: str=pt.common.Name.AUTO_GENERATED, 
                  safe_range: float= 0.3):
@@ -294,7 +278,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
                         topic_name=topic_name,
                         topic_type=LaserScan,
                         blackboard_variables={'laser_scan':'ranges'},
-=======
                  topic_name: str="/sick_lms_1xx/scan",  # topic = "/scan" for simulation
                  name: str=pt.common.Name.AUTO_GENERATED, 
                  safe_range: float=1.5):
@@ -302,7 +285,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
                         topic_name=topic_name,
                         topic_type=LaserScan,
                         blackboard_variables={'laser_scan':'ranges'},  
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
                         #initialise_variables={'battery': []},
                         clearing_policy=pt.common.ClearingPolicy.NEVER,  # to decide when data should be cleared/reset.
                         # qos_profile=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
@@ -321,8 +303,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
             key='point_at_min_dist',
             access=pt.common.Access.WRITE
         )
-       
-<<<<<<< HEAD
         # self.blackboard.register_key(
         #     key='counter',
         #     access=pt.common.Access.WRITE
@@ -400,8 +380,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
         
 
     def update(self):
-
-=======
         self.blackboard.register_key(
             key='counter',
             access=pt.common.Access.WRITE
@@ -413,7 +391,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
         self.blackboard.point_at_min_dist = 0.0
   
     def update(self):
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         """
         Primary function of the behavior is implemented in this method
         Call the parent to write the raw data to the blackboard and then check against the
@@ -430,7 +407,6 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
         """
 
         ## YOUR CODE HERE ##   
-<<<<<<< HEAD
         # self.blackboard.counter += 1
 
         if self.blackboard.exists('laser_scan'):
@@ -513,7 +489,6 @@ class move_allign(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="move_and_allign", topic_name="/cmd_vel", direction=1, max_ang_vel=0.5):
-=======
         self.blackboard.counter += 1
 
         if self.blackboard.counter > 500:
@@ -718,21 +693,15 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="rotate angle", topic_name="/cmd_vel", direction=1, max_ang_vel=1.0):
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
         self.topic_name = topic_name
 
         self.max_ang_vel = max_ang_vel # units: rad/sec
-
-<<<<<<< HEAD
-=======
         # Set up direction of rotation
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         self.direction = direction
 
         # Execution checker
         self.sent_goal = False
-<<<<<<< HEAD
         self.section_executed = False  # Flag to track if the section has been executed
 
 
@@ -754,8 +723,6 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
 
 
         
-=======
-
         # become a behaviour
         super(rotate_wrt_angle, self).__init__(name)
 
@@ -764,17 +731,13 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
         self.slope = self.blackboard.get('wall_slope')
         # self.m1 = abs(self.slope)
         self.m1 = self.slope
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
     def setup(self, **kwargs):
         """
         Setting up things which generally might require time to prevent delay in tree initialisation
         """
-<<<<<<< HEAD
         self.logger.info("[moving_and_alligning] setting up move_allign behavior")
-=======
         self.logger.info("[rotate_wrt_angle] setting up rotate behavior")
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         
         try:
             self.node = kwargs['node']
@@ -788,12 +751,7 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
             topic=self.topic_name,
             qos_profile=ptr.utilities.qos_profile_latched()
         )
-
-<<<<<<< HEAD
         # self.distance = self.blackboard.get('near_distance')
-
-=======
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         self.feedback_message = "setup"
         return True
 
@@ -805,7 +763,6 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
         where, if **direction** is +1, it implies clockwise rotation, and if it is -1, it implies
         counter-clockwise rotation
         """
-<<<<<<< HEAD
         self.logger.info("[moving_and_alligning] setting up move_allign behavior")
         self.logger.debug("%s.update()" % self.__class__.__name__)
         # self.d = self.blackboard.get('distance')
@@ -894,8 +851,7 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
                    
                     
 
-                                               
-=======
+       
         self.logger.info("[rotate_wrt_angle] update: updating rotate behavior")
         self.logger.debug("%s.update()" % self.__class__.__name__)
         # print(self.blackboard.storage['m1'])
@@ -929,7 +885,6 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
 
         
 
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     def terminate(self, new_status):
         """
         terminate() is trigerred once the execution of the behavior finishes, 
@@ -942,7 +897,6 @@ class rotate_wrt_angle(pt.behaviour.Behaviour):
         twist_msg.angular.z = 0.
                     
         self.cmd_vel_pub.publish(twist_msg)
-<<<<<<< HEAD
         # print("aligned")
         self.blackboard.set('aligned',True)
         self.blackboard.set('wall_warn', False)
@@ -965,7 +919,6 @@ class wall_following(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="following_wall", topic_name="/cmd_vel", direction=1, max_ang_vel=0.5):
-=======
 
         # self.blackboard.set('check_warning',False)
         self.blackboard.set('wall_warn',False)
@@ -986,7 +939,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="moving_wrt_distance", topic_name="/cmd_vel", direction=1, max_ang_vel=0.1):
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
         self.topic_name = topic_name
 
@@ -998,7 +950,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         self.sent_goal = False
 
         # become a behaviour
-<<<<<<< HEAD
         super(wall_following, self).__init__(name)
 
         self.blackboard = pt.blackboard.Blackboard()
@@ -1014,24 +965,19 @@ class move_wrt_distance(pt.behaviour.Behaviour):
     
 
 
-=======
         super(move_wrt_distance, self).__init__(name)
 
         self.blackboard = pt.blackboard.Blackboard()
 
         self.d = self.blackboard.get('distance')
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         
 
     def setup(self, **kwargs):
         """
         Setting up things which generally might require time to prevent delay in tree initialisation
         """
-<<<<<<< HEAD
         self.logger.info("[following_wall] setting up move_allign behavior")
-=======
         self.logger.info("[moving_wrt_distance] setting up rotate behavior")
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         
         try:
             self.node = kwargs['node']
@@ -1046,13 +992,8 @@ class move_wrt_distance(pt.behaviour.Behaviour):
             qos_profile=ptr.utilities.qos_profile_latched()
         )
 
-<<<<<<< HEAD
         # self.distance = self.blackboard.get('near_distance')
-
-=======
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
-        self.feedback_message = "setup"
-        return True
+        self.feedback_message = "setup"        return True
 
     def update(self):
         """
@@ -1062,7 +1003,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         where, if **direction** is +1, it implies clockwise rotation, and if it is -1, it implies
         counter-clockwise rotation
         """
-<<<<<<< HEAD
         self.logger.info("[following_wall] setting up move_allign behavior")
         self.logger.debug("%s.update()" % self.__class__.__name__)
         # self.d = self.blackboard.get('distance')
@@ -1097,9 +1037,7 @@ class move_wrt_distance(pt.behaviour.Behaviour):
                
             
 
-            
-                                
-=======
+ 
         self.logger.info("[moving_wrt_distance] update: updating rotate behavior")
         self.logger.debug("%s.update()" % self.__class__.__name__)
         self.d = self.blackboard.get('distance')
@@ -1122,8 +1060,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
 
 
         
-
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     def terminate(self, new_status):
         """
         terminate() is trigerred once the execution of the behavior finishes, 
@@ -1136,7 +1072,7 @@ class move_wrt_distance(pt.behaviour.Behaviour):
         twist_msg.angular.z = 0.
                     
         self.cmd_vel_pub.publish(twist_msg)
-<<<<<<< HEAD
+
         self.blackboard.set('aligned',False)
         self.blackboard.set('wall_warn',False)
         self.slope = self.blackboard.get('slope')
@@ -1773,7 +1709,6 @@ class move_wrt_distance(pt.behaviour.Behaviour):
 #         # self.angle = abs(self.blackboard.wall_slope)
 
 #         return pt.common.Status.SUCCESS
-=======
 
         self.d = self.blackboard.get('distance')
 
@@ -1784,4 +1719,3 @@ class move_wrt_distance(pt.behaviour.Behaviour):
 
         return pt.common.Status.SUCCESS
 
->>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
