@@ -14,8 +14,11 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from autonomous_map_navigate.utilities import *
 import math
+<<<<<<< HEAD
 import time
 
+=======
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
 
 
@@ -195,7 +198,11 @@ class stop_motion(pt.behaviour.Behaviour):
         # joyMessage.buttons = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
         # self.joy_pub.publish(joyMessage)   
              
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         return pt.common.Status.SUCCESS
         # return pt.common.Status.RUNNING
 
@@ -216,7 +223,12 @@ class stop_motion(pt.behaviour.Behaviour):
         self.cmd_vel_topic.publish(twist_msg)
         self.sent_goal = False
         return super().terminate(new_status)
+<<<<<<< HEAD
    
+=======
+    
+    
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
 class battery_status2bb(ptr.subscribers.ToBlackboard):
 
@@ -274,6 +286,7 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
     Checking laser_scan to avoid possible collison
     """
     def __init__(self, 
+<<<<<<< HEAD
                  topic_name: str="/sick_lms_1xx/scan", #/sick_lms_1xx/scan for robile3
                  name: str=pt.common.Name.AUTO_GENERATED, 
                  safe_range: float= 0.3):
@@ -281,6 +294,15 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
                         topic_name=topic_name,
                         topic_type=LaserScan,
                         blackboard_variables={'laser_scan':'ranges'},
+=======
+                 topic_name: str="/sick_lms_1xx/scan",  # topic = "/scan" for simulation
+                 name: str=pt.common.Name.AUTO_GENERATED, 
+                 safe_range: float=1.5):
+        super().__init__(name=name,
+                        topic_name=topic_name,
+                        topic_type=LaserScan,
+                        blackboard_variables={'laser_scan':'ranges'},  
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
                         #initialise_variables={'battery': []},
                         clearing_policy=pt.common.ClearingPolicy.NEVER,  # to decide when data should be cleared/reset.
                         # qos_profile=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
@@ -300,6 +322,7 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
             access=pt.common.Access.WRITE
         )
        
+<<<<<<< HEAD
         # self.blackboard.register_key(
         #     key='counter',
         #     access=pt.common.Access.WRITE
@@ -378,6 +401,19 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
 
     def update(self):
 
+=======
+        self.blackboard.register_key(
+            key='counter',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.counter = 0
+        self.blackboard.collison_warning = False   # decision making
+        self.safe_min_range = safe_range
+        self.blackboard.point_at_min_dist = 0.0
+  
+    def update(self):
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         """
         Primary function of the behavior is implemented in this method
         Call the parent to write the raw data to the blackboard and then check against the
@@ -394,6 +430,7 @@ class laser_scan_2bb(ptr.subscribers.ToBlackboard):
         """
 
         ## YOUR CODE HERE ##   
+<<<<<<< HEAD
         # self.blackboard.counter += 1
 
         if self.blackboard.exists('laser_scan'):
@@ -476,15 +513,226 @@ class move_allign(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="move_and_allign", topic_name="/cmd_vel", direction=1, max_ang_vel=0.5):
+=======
+        self.blackboard.counter += 1
+
+        if self.blackboard.counter > 500:
+            laser_data = np.array(self.blackboard.laser_scan)
+
+            laser_data[laser_data <= 0.05] = 1.0
+            laser_data = np.nan_to_num(laser_data, nan=40)
+
+            laser_data[np.isinf(laser_data)]=50
+            laser_data = laser_data.tolist()
+        
+            self.blackboard.point_at_min_dist = min(laser_data)
+            # self.blackboard.laser_data = laser_data
+
+            if self.blackboard.point_at_min_dist < self.safe_min_range:
+
+                self.blackboard.collison_warning = True
+
+            else:
+                self.blackboard.collison_warning = False
+
+            return pt.common.Status.SUCCESS
+        else:
+            return pt.common.Status.RUNNING            
+        
+class position_wrt_odom(ptr.subscribers.ToBlackboard):
+
+    """
+    Getting the Position of Robot with respect to Odometry
+    """
+    def __init__(self, 
+                 topic_name: str="/odom",
+                 name: str=pt.common.Name.AUTO_GENERATED):
+        super().__init__(name=name,
+                        topic_name=topic_name,
+                        topic_type=Odometry,
+                        blackboard_variables={'odom_data':'pose.pose.position','odom_orientation':'pose.pose.orientation'},
+                        clearing_policy=pt.common.ClearingPolicy.NEVER,  # to decide when data should be cleared/reset.
+                        # qos_profile=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
+                        qos_profile=QoSProfile(
+                                    reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+                                    history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+                                    depth=10
+                                )
+                        )
+        
+        # self.blackboard.odom_flag = False
+        
+        self.blackboard.register_key(
+            key='robot_center',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.register_key(
+            key='robot_end',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.register_key(
+            key='robot_slope',
+            access=pt.common.Access.WRITE
+        )
+
+        
+       
+       
+    def update(self):
+        """
+        Primary function of the behavior is implemented in this method
+
+        Call the parent to write the raw data to the blackboard 
+        """
+        self.logger.info("[ODOM SCAN] update: running position_wrt_odom update")
+        self.logger.debug("%s.update()" % self.__class__.__name__)
+        status = super(position_wrt_odom, self).update()
+
+        a=0
+        odom_info = self.blackboard.odom_data
+        odom_orient = self.blackboard.odom_orientation
+        
+
+        robot_position = [odom_info.x, odom_info.y]
+        robot_orient = [odom_orient.z, odom_orient.w]
+        theta = 2*math.atan2(robot_orient[0],robot_orient[1])
+        d=0.5
+        robot_end = [robot_position[0]+d*math.cos(theta),robot_position[1]+d*math.sin(theta)]
+                
+        # self.blackboard.robot_orientation = robot_orient
+
+        lin_obj = Line(robot_position, robot_end)
+        robot_slope = lin_obj.equation()
+
+        robot_position = [odom_info.x, odom_info.y, theta]
+        self.blackboard.robot_center = robot_position
+        
+        self.blackboard.robot_end = robot_end
+
+        self.blackboard.robot_slope = robot_slope
+
+    
+
+        a=a+1
+        
+        if(a!=0):
+            return pt.common.Status.SUCCESS
+        else:
+            return pt.common.Status.RUNNING  
+
+
+
+class wall_get_data(ptr.subscribers.ToBlackboard):
+
+    def __init__(self, 
+                 topic_name: str="/sick_lms_1xx/scan",
+                 name: str=pt.common.Name.AUTO_GENERATED):
+        super().__init__(name=name,
+                        topic_name=topic_name,
+                        topic_type=LaserScan,
+                        blackboard_variables={'laser_scan':'ranges'},
+                        clearing_policy=pt.common.ClearingPolicy.NEVER,  # to decide when data should be cleared/reset.
+                        # qos_profile=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
+                        qos_profile=QoSProfile(
+                                    reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+                                    history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+                                    depth=10
+                                )
+                        )
+        
+        
+        self.blackboard.register_key(
+            key='wall_slope',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.register_key(
+            key='laser_data',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.register_key(
+            key='distance',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.register_key(
+            key='wall_warn',
+            access=pt.common.Access.WRITE
+        )
+
+        self.blackboard.wall_warn = False
+        self.blackboard.wall_slope = 0.0
+        self.blackboard.distance = 0.0
+
+             
+
+
+    def update(self):   
+        laser_data = np.array(self.blackboard.laser_scan)
+
+        laser_data[laser_data <= 0.05] = 1.0
+        laser_data = np.nan_to_num(laser_data, nan=40)
+
+        laser_data[np.isinf(laser_data)]=50
+        # laser_data = laser_data.tolist()
+
+        data = laser_data
+
+        self.blackboard.laser_data = laser_data
+
+        # data = np.array(laser_data)
+        
+        #for simulation
+        # red_data = process_data(range_data= data, max_angle= 1.5700000524520874, min_angle= -1.5700000524520874, max_range= 5.599999904632568, min_range= 0.05000000074505806, sigma= 0.15 , rf_max_pts= 4, reduce_bool= True)
+        
+        #for robile3
+        red_data = process_data(range_data= data, max_angle= 1.5707963705062866, min_angle= -1.5707963705062866, max_range= 25.0, min_range= 0.05000000074505806, sigma= 0.15 , rf_max_pts= 4, reduce_bool= True)
+        # filtered_data = median_filter(red_data,k=5)
+        res = RANSAC_get_line_params(points= red_data, dist_thresh= 0.03, iterations= 20, thresh_count= 4)
+
+        if res == []:
+            print("aligned")
+            self.blackboard.wall_slope = 1000
+            self.blackboard.distance = "insafe"
+            self.blackboard.wall_warn = False
+
+        else:
+            print(res)
+            self.blackboard.wall_slope = res[0][1]
+            self.blackboard.distance = res[0][0]
+            self.blackboard.wall_warn = True
+                       
+
+        return pt.common.Status.SUCCESS
+    
+
+
+
+class rotate_wrt_angle(pt.behaviour.Behaviour):
+
+    """
+    Rotates the robot about z-axis 
+    """
+
+    def __init__(self, name="rotate angle", topic_name="/cmd_vel", direction=1, max_ang_vel=1.0):
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
         self.topic_name = topic_name
 
         self.max_ang_vel = max_ang_vel # units: rad/sec
 
+<<<<<<< HEAD
+=======
+        # Set up direction of rotation
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         self.direction = direction
 
         # Execution checker
         self.sent_goal = False
+<<<<<<< HEAD
         self.section_executed = False  # Flag to track if the section has been executed
 
 
@@ -506,12 +754,27 @@ class move_allign(pt.behaviour.Behaviour):
 
 
         
+=======
+
+        # become a behaviour
+        super(rotate_wrt_angle, self).__init__(name)
+
+        self.blackboard = pt.blackboard.Blackboard()
+       
+        self.slope = self.blackboard.get('wall_slope')
+        # self.m1 = abs(self.slope)
+        self.m1 = self.slope
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
     def setup(self, **kwargs):
         """
         Setting up things which generally might require time to prevent delay in tree initialisation
         """
+<<<<<<< HEAD
         self.logger.info("[moving_and_alligning] setting up move_allign behavior")
+=======
+        self.logger.info("[rotate_wrt_angle] setting up rotate behavior")
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         
         try:
             self.node = kwargs['node']
@@ -526,8 +789,11 @@ class move_allign(pt.behaviour.Behaviour):
             qos_profile=ptr.utilities.qos_profile_latched()
         )
 
+<<<<<<< HEAD
         # self.distance = self.blackboard.get('near_distance')
 
+=======
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         self.feedback_message = "setup"
         return True
 
@@ -539,6 +805,7 @@ class move_allign(pt.behaviour.Behaviour):
         where, if **direction** is +1, it implies clockwise rotation, and if it is -1, it implies
         counter-clockwise rotation
         """
+<<<<<<< HEAD
         self.logger.info("[moving_and_alligning] setting up move_allign behavior")
         self.logger.debug("%s.update()" % self.__class__.__name__)
         # self.d = self.blackboard.get('distance')
@@ -628,6 +895,41 @@ class move_allign(pt.behaviour.Behaviour):
                     
 
                                                
+=======
+        self.logger.info("[rotate_wrt_angle] update: updating rotate behavior")
+        self.logger.debug("%s.update()" % self.__class__.__name__)
+        # print(self.blackboard.storage['m1'])
+        # self.m1 = self.blackboard.wall_slope
+        self.slope = self.blackboard.get('wall_slope')
+        print(self.slope)
+        self.m1 = abs(self.slope)
+        print(self.m1)
+
+        # Send the rotation command to self.topic_name in this method using the message type Twist()
+        
+
+        msg = Twist()
+       
+
+        if self.m1 == 1000 or self.m1 < 0.1:
+            return pt.common.Status.SUCCESS
+        
+        else:
+            msg.linear.x = 0.0
+            msg.linear.y= 0.0
+            msg.angular.z = 0.2
+
+            self.cmd_vel_pub.publish(msg)
+            # self.angle = self.angle - 1
+            self.slope = self.blackboard.get('wall_slope')
+            self.m1 = abs(self.slope)
+
+            return pt.common.Status.RUNNING
+
+
+        
+
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     def terminate(self, new_status):
         """
         terminate() is trigerred once the execution of the behavior finishes, 
@@ -640,6 +942,7 @@ class move_allign(pt.behaviour.Behaviour):
         twist_msg.angular.z = 0.
                     
         self.cmd_vel_pub.publish(twist_msg)
+<<<<<<< HEAD
         # print("aligned")
         self.blackboard.set('aligned',True)
         self.blackboard.set('wall_warn', False)
@@ -662,6 +965,28 @@ class wall_following(pt.behaviour.Behaviour):
     """
 
     def __init__(self, name="following_wall", topic_name="/cmd_vel", direction=1, max_ang_vel=0.5):
+=======
+
+        # self.blackboard.set('check_warning',False)
+        self.blackboard.set('wall_warn',False)
+
+        self.slope = self.blackboard.get('wall_slope')
+        self.m1 = abs(self.slope)
+
+
+        # self.angle = abs(self.blackboard.wall_slope)
+
+        return pt.common.Status.SUCCESS
+
+
+class move_wrt_distance(pt.behaviour.Behaviour):
+
+    """
+    Rotates the robot about z-axis 
+    """
+
+    def __init__(self, name="moving_wrt_distance", topic_name="/cmd_vel", direction=1, max_ang_vel=0.1):
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
         self.topic_name = topic_name
 
@@ -673,6 +998,7 @@ class wall_following(pt.behaviour.Behaviour):
         self.sent_goal = False
 
         # become a behaviour
+<<<<<<< HEAD
         super(wall_following, self).__init__(name)
 
         self.blackboard = pt.blackboard.Blackboard()
@@ -688,13 +1014,24 @@ class wall_following(pt.behaviour.Behaviour):
     
 
 
+=======
+        super(move_wrt_distance, self).__init__(name)
+
+        self.blackboard = pt.blackboard.Blackboard()
+
+        self.d = self.blackboard.get('distance')
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         
 
     def setup(self, **kwargs):
         """
         Setting up things which generally might require time to prevent delay in tree initialisation
         """
+<<<<<<< HEAD
         self.logger.info("[following_wall] setting up move_allign behavior")
+=======
+        self.logger.info("[moving_wrt_distance] setting up rotate behavior")
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         
         try:
             self.node = kwargs['node']
@@ -709,8 +1046,11 @@ class wall_following(pt.behaviour.Behaviour):
             qos_profile=ptr.utilities.qos_profile_latched()
         )
 
+<<<<<<< HEAD
         # self.distance = self.blackboard.get('near_distance')
 
+=======
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         self.feedback_message = "setup"
         return True
 
@@ -722,6 +1062,7 @@ class wall_following(pt.behaviour.Behaviour):
         where, if **direction** is +1, it implies clockwise rotation, and if it is -1, it implies
         counter-clockwise rotation
         """
+<<<<<<< HEAD
         self.logger.info("[following_wall] setting up move_allign behavior")
         self.logger.debug("%s.update()" % self.__class__.__name__)
         # self.d = self.blackboard.get('distance')
@@ -758,6 +1099,31 @@ class wall_following(pt.behaviour.Behaviour):
 
             
                                 
+=======
+        self.logger.info("[moving_wrt_distance] update: updating rotate behavior")
+        self.logger.debug("%s.update()" % self.__class__.__name__)
+        self.d = self.blackboard.get('distance')
+
+        msg = Twist()
+        
+
+        if self.d < 1.2 :
+            return pt.common.Status.SUCCESS
+        
+        else:
+            msg.linear.x = self.max_ang_vel
+            msg.linear.y= 0.0
+
+            self.cmd_vel_pub.publish(msg)
+                       
+            self.d = self.blackboard.get('distance')
+
+            return pt.common.Status.RUNNING
+
+
+        
+
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     def terminate(self, new_status):
         """
         terminate() is trigerred once the execution of the behavior finishes, 
@@ -770,6 +1136,7 @@ class wall_following(pt.behaviour.Behaviour):
         twist_msg.angular.z = 0.
                     
         self.cmd_vel_pub.publish(twist_msg)
+<<<<<<< HEAD
         self.blackboard.set('aligned',False)
         self.blackboard.set('wall_warn',False)
         self.slope = self.blackboard.get('slope')
@@ -1406,3 +1773,15 @@ class wall_following(pt.behaviour.Behaviour):
 #         # self.angle = abs(self.blackboard.wall_slope)
 
 #         return pt.common.Status.SUCCESS
+=======
+
+        self.d = self.blackboard.get('distance')
+
+        # self.blackboard.set('wall_warn',False)
+
+
+        # self.angle = abs(self.blackboard.wall_slope)
+
+        return pt.common.Status.SUCCESS
+
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712

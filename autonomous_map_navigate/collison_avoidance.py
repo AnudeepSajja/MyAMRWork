@@ -45,9 +45,15 @@ def create_root() -> pt.behaviour.Behaviour:
 
     topics2bb = pt.composites.Sequence(name="Topics2BB",memory=True)
     priorities = pt.composites.Selector(name="Priorities",memory=False)
+<<<<<<< HEAD
     wall = pt.composites.Selector(name="Wall",memory=False)
     action = pt.composites.Selector(name="Action",memory=False)
     cond = pt.composites.Sequence(name="Condition",memory=False)
+=======
+    # wall = pt.composites.Selector(name="Wall",memory=False)
+    action = pt.composites.Sequence(name="Action",memory=False)
+    # cond = pt.composites.Sequence(name="Condition",memory=False)
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     
 
     """
@@ -63,6 +69,7 @@ def create_root() -> pt.behaviour.Behaviour:
     
     laserScan2BB = laser_scan_2bb(
     	name="LaserScan2BB",
+<<<<<<< HEAD
     	topic_name="/scan",
         safe_range=0.5
     )
@@ -70,6 +77,23 @@ def create_root() -> pt.behaviour.Behaviour:
    
     
        
+=======
+    	topic_name="/sick_lms_1xx/scan",   #/scan for simulation
+        safe_range=0.2
+    )
+
+    odom2BB = position_wrt_odom(
+        name = "Position2BB"
+        
+    )
+
+    walldata = wall_get_data(
+        name = "WallData",
+        topic_name="/sick_lms_1xx/scan"
+        
+    )
+      
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
       
   	
@@ -82,6 +106,13 @@ def create_root() -> pt.behaviour.Behaviour:
     rotate_platform = rotate(name="RotatePlatform", topic_name="/cmd_vel")
     
     stop_platform = stop_motion(name="StopPlatform",topic_name1="/cmd_vel")
+<<<<<<< HEAD
+=======
+
+    align = rotate_wrt_angle(name="Aligning",topic_name="/cmd_vel")
+
+    move = move_wrt_distance(name="MoveSafe",topic_name="/cmd_vel")
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 	
 
     """
@@ -97,16 +128,36 @@ def create_root() -> pt.behaviour.Behaviour:
     def check_collison_warn_on_blackboard(blackboard):
         return blackboard.collison_warning
     
+<<<<<<< HEAD
     
     
 
 
        
+=======
+    def get_ransac(blackboard):
+        return blackboard.ransac_warn 
+
+    def check_detect_on_blackboard(blackboard):
+        return blackboard.detect_warning
+    
+    def check_wallwarn_on_blackboard(blackboard):
+        return blackboard.wall_warn 
+    
+    
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
     
     blackboard = pt.blackboard.Blackboard()
     blackboard.battery_low_warning = False
+<<<<<<< HEAD
      
+=======
+    blackboard.collison_warning = False
+
+    blackboard.wall_warn = False
+    
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     battery_emergency = pt.decorators.EternalGuard(
         name="Battery Low?",
         condition=check_battery_low_on_blackboard,
@@ -118,14 +169,38 @@ def create_root() -> pt.behaviour.Behaviour:
         name="Colliding?",
         condition=check_collison_warn_on_blackboard,
         blackboard_keys={"collison_warning"},
+<<<<<<< HEAD
+=======
+
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
         child = stop_platform
 
     )
     
 
+<<<<<<< HEAD
     idle = pt.behaviours.Running(name="Idle")
 
 
+=======
+    check = pt.decorators.EternalGuard(
+        name="CheckingWall?",
+        condition=check_wallwarn_on_blackboard,
+        blackboard_keys={"wall_warn"},
+        child = action
+    ) 
+
+
+
+
+
+
+
+
+    idle = pt.behaviours.Running(name="Idle")
+   
+
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     """
     construct the behvior tree structure using the nodes and behaviors defined above
     """
@@ -133,6 +208,7 @@ def create_root() -> pt.behaviour.Behaviour:
     ### YOUR CODE HERE ###
     
     root.add_child(topics2bb)
+<<<<<<< HEAD
     topics2bb.add_child(battery2bb)
     topics2bb.add_child(laserScan2BB)
     
@@ -141,11 +217,27 @@ def create_root() -> pt.behaviour.Behaviour:
     root.add_child(priorities)
     priorities.add_child(collide_emergency)
     priorities.add_child(battery_emergency)
+=======
+    # topics2bb.add_child(battery2bb)
+    topics2bb.add_child(laserScan2BB)
+    topics2bb.add_child(walldata)
+
+     
+    root.add_child(priorities)
+    # priorities.add_child(collide_emergency)
+    # priorities.add_child(battery_emergency)
+    priorities.add_child(check)
+    action.add_child(move)
+    action.add_child(align)
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     priorities.add_child(idle)
 
 
     
+<<<<<<< HEAD
     
+=======
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
 
     return root
 
@@ -177,7 +269,11 @@ def main():
         sys.exit(1)
     
     # frequency of ticks
+<<<<<<< HEAD
     tree.tick_tock(period_ms=10)    
+=======
+    tree.tick_tock(period_ms=10) #chamge the value to 100 if required for communication   
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
     
     try:
         rclpy.spin(tree.node)
@@ -188,4 +284,8 @@ def main():
         rclpy.try_shutdown()
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     main()
+=======
+    main()
+>>>>>>> 48427bfa980cf65d7cdbc91bc45e55b49df71712
